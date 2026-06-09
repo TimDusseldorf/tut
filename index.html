@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Опросник «Биохимия женщины 45+»</title>
+<style>
+  :root {
+    --dp: #4A1942; --purple: #7B2D8B; --lav: #F3E5F5;
+    --teal: #00695C; --lteal: #E0F2F1;
+    --blue: #1565C0; --lblue: #E3F2FD;
+    --green: #2E7D32; --lgreen: #E8F5E9;
+    --orange: #E65100; --lorange: #FFF3E0;
+    --red: #C62828; --lred: #FCE4EC;
+    --grey: #6C757D; --white: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f8f0fc; color: #222; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--dp); color: #fff; padding: 18px 20px; text-align: center; }
+  .header h1 { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 0.8rem; opacity: .8; }
+
+  /* PROGRESS */
+  .progress-bar-wrap { background: #e0e0e0; height: 6px; }
+  .progress-bar { background: var(--purple); height: 6px; transition: width .4s; }
+
+  /* SCREEN */
+  .screen { display: none; padding: 16px; max-width: 680px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  /* INTRO */
+  .intro-card { background: #fff; border-radius: 12px; padding: 20px; border-top: 4px solid var(--purple); margin-bottom: 12px; }
+  .intro-card h2 { color: var(--dp); font-size: 1.1rem; margin-bottom: 10px; }
+  .intro-card p { font-size: 0.88rem; line-height: 1.55; color: #444; margin-bottom: 8px; }
+  .scale-row { display: flex; gap: 6px; margin: 12px 0; }
+  .scale-chip { flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
+  .btn-primary { display: block; width: 100%; background: var(--purple); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 16px; }
+  .btn-primary:hover { background: var(--dp); }
+
+  /* BLOCK HEADER */
+  .block-header { background: var(--purple); color: #fff; border-radius: 10px 10px 0 0; padding: 14px 16px; }
+  .block-header .week-tag { font-size: 0.72rem; opacity: .8; margin-bottom: 4px; }
+  .block-header h2 { font-size: 1rem; font-weight: 700; }
+  .block-header .progress-text { font-size: 0.75rem; opacity: .8; margin-top: 4px; }
+
+  /* QUESTIONS */
+  .questions-wrap { background: #fff; border-radius: 0 0 10px 10px; border: 1px solid #e0d0f0; border-top: none; padding: 14px; margin-bottom: 14px; }
+  .question-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0e8f8; }
+  .question-row:last-child { border-bottom: none; }
+  .q-num { background: var(--purple); color: #fff; min-width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .q-text { flex: 1; font-size: 0.83rem; line-height: 1.45; color: #333; }
+  .q-score { display: flex; gap: 4px; flex-shrink: 0; }
+  .score-btn { width: 30px; height: 30px; border-radius: 6px; border: 2px solid #ddd; background: #fafafa; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all .15s; color: #666; }
+  .score-btn:hover { border-color: var(--purple); color: var(--purple); }
+  .score-btn.selected { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .score-btn[data-v="1"].selected { background: #F57F17; border-color: #F57F17; }
+  .score-btn[data-v="2"].selected { background: var(--orange); border-color: var(--orange); }
+  .score-btn[data-v="3"].selected { background: var(--red); border-color: var(--red); }
+
+  .nav-row { display: flex; gap: 10px; }
+  .btn-sec { flex: 1; background: #f0e8f8; color: var(--purple); border: none; border-radius: 10px; padding: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+  .btn-next { flex: 2; background: var(--purple); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+  .btn-next:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* RESULTS */
+  .results-header { background: var(--dp); color: #fff; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 14px; }
+  .results-header h2 { font-size: 1.15rem; margin-bottom: 6px; }
+  .results-header p { font-size: 0.8rem; opacity: .8; }
+
+  .block-result { border-radius: 10px; overflow: hidden; margin-bottom: 10px; border: 2px solid; }
+  .block-result-header { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .block-result-header .name { font-size: 0.85rem; font-weight: 700; }
+  .block-result-header .score-badge { font-size: 0.75rem; font-weight: 700; background: rgba(255,255,255,.25); padding: 3px 8px; border-radius: 20px; }
+  .block-result-body { background: #fff; padding: 10px 14px; }
+  .zone-bar-wrap { background: #eee; border-radius: 4px; height: 8px; margin: 6px 0; }
+  .zone-bar { height: 8px; border-radius: 4px; transition: width .6s; }
+  .interpretation { font-size: 0.8rem; line-height: 1.4; color: #555; }
+  .first-step { font-size: 0.78rem; margin-top: 6px; color: #333; font-style: italic; }
+
+  .priority-box { background: var(--lav); border: 2px solid var(--purple); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .priority-box h3 { color: var(--dp); font-size: 0.95rem; margin-bottom: 8px; }
+  .priority-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .priority-num { background: var(--purple); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+  .priority-text { font-size: 0.83rem; }
+
+  .analyses-box { background: var(--lblue); border: 2px solid var(--blue); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .analyses-box h3 { color: var(--blue); font-size: 0.95rem; margin-bottom: 8px; }
+  .analysis-chip { display: inline-block; background: #fff; border: 1px solid var(--blue); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; margin: 3px 3px 3px 0; color: var(--blue); }
+
+  .restart-btn { display: block; width: 100%; background: var(--dp); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; }
+  .club-footer { text-align: center; padding: 16px; color: var(--grey); font-size: 0.75rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>КЛУБ «БИОХИМИЯ ЖЕНЩИНЫ 45+»</h1>
+  <p>Опросник самочувствия · 8 блоков · 120 вопросов</p>
+</div>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progBar" style="width:0%"></div></div>
+
+<!-- INTRO -->
+<div class="screen active" id="screen-intro">
+<div style="padding:16px;max-width:680px;margin:0 auto;">
+  <div class="intro-card">
+    <h2>Добро пожаловать</h2>
+    <p>Этот опросник поможет определить биохимические приоритеты вашего самочувствия. 8 блоков, 15 вопросов в каждом. Отвечайте честно — первая реакция точнее обдуманной.</p>
+    <p>Оцените каждое утверждение за последние <strong>4 недели</strong>:</p>
+    <div class="scale-row">
+      <div class="scale-chip" style="background:#E8F5E9;color:#2E7D32">0<br><span style="font-weight:400;font-size:.7rem">Никогда</span></div>
+      <div class="scale-chip" style="background:#FFFDE7;color:#F57F17">1<br><span style="font-weight:400;font-size:.7rem">Иногда</span></div>
+      <div class="scale-chip" style="background:#FFF3E0;color:#E65100">2<br><span style="font-weight:400;font-size:.7rem">Часто</span></div>
+      <div class="scale-chip" style="background:#FCE4EC;color:#C62828">3<br><span style="font-weight:400;font-size:.7rem">Почти всегда</span></div>
+    </div>
+    <p style="font-size:.78rem;color:#666">Время прохождения: 15–20 минут. Результат сохраняется в браузере.</p>
+  </div>
+  <button class="btn-primary" onclick="startQuiz()">Начать опросник →</button>
+</div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="screen-quiz">
+<div style="padding:16px;max-width:680px;margin:0 auto;" id="quizContent"></div>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="screen-results">
+<div style="padding:16px;max-width:680px;margin:0 auto;" id="resultsContent"></div>
+</div>
+
+<div class="club-footer">Клуб «Биохимия женщины 45+» · Биохимик · Хайльпрактикер</div>
+
+<script>
+const BLOCKS = [
+  {
+    id:"sleep", num:1, title:"СОН И ВОССТАНОВЛЕНИЕ", color:"#1565C0", fill:"#E3F2FD",
+    week:"Тематическая неделя: «Сон — основа всего»",
+    questions:[
+      "Просыпаюсь уставшей, даже если спала 7–8 часов",
+      "Трудно заснуть — лежу и не могу отключиться больше 20–30 минут",
+      "Просыпаюсь ночью и долго не могу заснуть снова",
+      "Просыпаюсь в 3–5 утра без будильника и не сплю дальше",
+      "Ночные приливы или потливость будят меня",
+      "Ночью бывает сердцебиение, которое мешает спать",
+      "Смотрю в телефон или экран позже 21:00",
+      "В спальне тепло (теплее 20°C) или есть источники света",
+      "Засыпаю позже полуночи регулярно",
+      "Днём сильно клонит в сон или сонливость после обеда",
+      "Принимаю снотворное, успокоительное или алкоголь чтобы заснуть",
+      "Утром долго «включаюсь» — нужно много времени",
+      "В выходные сплю значительно дольше чем в будни (на 1,5+ ч)",
+      "Сплю менее 6 или более 9 часов регулярно",
+      "После ночи с алкоголем сон явно хуже, чем без него"
+    ],
+    priority_analyses:["Кортизол слюны в 4 точках (CAR)","Мелатонин в слюне","ТТГ + свободный Т3","Ферритин","Магний в эритроцитах","Витамин D 25(OH)D","Прогестерон","Глюкоза + инсулин натощак"],
+    first_step:"Температура спальни 17–18°C + очки/f.lux с 20:30 + магний 300 мг вечером"
+  },
+  {
+    id:"hormones", num:2, title:"ГОРМОНАЛЬНЫЙ ФОН", color:"#7B2D8B", fill:"#F3E5F5",
+    week:"Тематическая неделя: «Гормоны без страха»",
+    questions:[
+      "Бывают приливы — внезапное ощущение жара по телу",
+      "Цикл стал нерегулярным или менструации прекратились < 3 лет назад",
+      "Раздражительность или перепады настроения без видимой причины",
+      "Тревога или беспокойство которых не было раньше или усилились",
+      "Снижение интереса к сексу или дискомфорт при близости",
+      "Сухость кожи, влагалища или слизистых — появилась или усилилась",
+      "Волосы выпадают больше чем обычно",
+      "Сердцебиения без физической нагрузки",
+      "Снижение памяти или концентрации — «туман в голове»",
+      "Набираю вес особенно в области живота без изменения питания",
+      "Боли в суставах или мышцах, которых не было раньше",
+      "Стала более чувствительна к стрессу — то что раньше не выбивало, теперь выбивает",
+      "Ощущение что «стала другим человеком» — не узнаю свои реакции",
+      "Периоды депрессивного фона или бессмысленности без внешних причин",
+      "Учащённое мочеиспускание или подтекание при кашле, смехе, прыжках"
+    ],
+    priority_analyses:["Эстрадиол (E2)","ФСГ на 2–3 день цикла","Прогестерон на 21 день","Тестостерон свободный","ДГЭА-С","ТТГ + fT3 + fT4 + АТ-ТПО","Кортизол утром","HbA1c + глюкоза + инсулин"],
+    first_step:"Изофлавоны сои 40–60 мг/день + льняное семя молотое 2 ст.л. + температура спальни 17–18°C"
+  },
+  {
+    id:"energy", num:3, title:"ЭНЕРГИЯ И УСТАЛОСТЬ", color:"#E65100", fill:"#FFF3E0",
+    week:"Тематическая неделя: «Откуда берётся энергия»",
+    questions:[
+      "Чувствую усталость большую часть дня даже если нормально выспалась",
+      "Нет сил на то что раньше давалось легко — работа, домашние дела",
+      "После нагрузки которая раньше бодрила — теперь долгое истощение",
+      "Мёрзну там, где другим комфортно — непереносимость холода",
+      "Выпадение волос или волосы стали заметно тоньше",
+      "Ногти ломкие или медленно растут",
+      "Трудно сосредоточиться — мышление кажется замедленным",
+      "Отёки — особенно к вечеру на ногах или лице утром",
+      "Одышка при нагрузке, которая раньше была лёгкой",
+      "Пью кофе или энергетики чтобы «запустить» себя утром",
+      "Нужно несколько часов чтобы «стать собой» после пробуждения",
+      "После еды наступает сильная сонливость или тяжесть",
+      "Бывают «провалы» энергии — буквально не могу двигаться 20–30 мин",
+      "Выносливость значительно снизилась за последние 1–2 года",
+      "Вечером неожиданно «второе дыхание» и трудно заснуть"
+    ],
+    priority_analyses:["Ферритин (оптимум 70–100 нг/мл)","ОАК с формулой (NLR)","ТТГ + свободный Т3 + fT4","Витамин B12","Витамин D 25(OH)D","Кортизол утром + ДГЭА-С","Глюкоза + инсулин + HbA1c","Вч-СРБ + гомоцистеин"],
+    first_step:"Проверить ферритин. Температура спальни 17–18°C. Утренний свет 10 мин. CoQ10 100 мг с завтраком."
+  },
+  {
+    id:"nutrition", num:4, title:"ПИТАНИЕ И ПИЩЕВЫЕ ПАТТЕРНЫ", color:"#2E7D32", fill:"#E8F5E9",
+    week:"Тематическая неделя: «Еда как биохимия»",
+    questions:[
+      "Пропускаю завтрак или ем его позже чем через 1,5–2 часа",
+      "Перекусываю между основными приёмами пищи",
+      "Завтрак преимущественно углеводный — каша, хлеб, фрукты",
+      "После обеда клонит в сон или чувствую тяжесть",
+      "Вечером ем сладкое, хлеб, выпечку",
+      "Ем быстро — основной приём пищи менее 15 минут",
+      "Начинаю приём пищи с хлеба, крекеров или углеводного продукта",
+      "Пью сладкие напитки — сок, компот, сладкий чай, газировку",
+      "Аппетит очень нестабилен — то совсем не хочу, то не могу остановиться",
+      "Белковые продукты есть не в каждом приёме пищи",
+      "Овощи ем редко или в очень маленьких количествах",
+      "Ем после 20:00 регулярно",
+      "Сильная тяга к определённым продуктам — сладкому, мучному",
+      "Ем не от голода — от скуки, стресса, привычки",
+      "Жирная рыба в рационе реже 2 раз в неделю"
+    ],
+    priority_analyses:["Глюкоза натощак + постпрандиальная через 2 ч","Инсулин натощак + HOMA-IR","HbA1c","Триглицериды (маркер углеводного нарушения)","Липидный профиль полный","Витамин B12 + фолат","Витамин D","Общий белок + альбумин"],
+    first_step:"Food sequencing при каждом приёме: овощи → белок → углеводы. Белок в каждом приёме ≥ 25 г."
+  },
+  {
+    id:"stress", num:5, title:"СТРЕСС И ЭМОЦИИ", color:"#C62828", fill:"#FCE4EC",
+    week:"Тематическая неделя: «Стресс — биохимия, не характер»",
+    questions:[
+      "Фоновая тревога или беспокойство — даже когда всё в порядке",
+      "Раздражаюсь на мелочи которые раньше не замечала",
+      "После стрессовой ситуации долго не могу успокоиться",
+      "Плачу легче чем раньше — или наоборот не могу заплакать",
+      "Вечером не могу «выключить голову» — мысли крутятся",
+      "Мысли о прошлом или тревоги о будущем которые сложно остановить",
+      "Стала менее терпима к неопределённости — не могу ждать решений",
+      "Социальные ситуации требуют больше сил чем раньше",
+      "Периоды когда ничего не хочется и всё кажется бессмысленным",
+      "Мотивация и инициатива снизились",
+      "Использую еду, алкоголь, покупки или телефон чтобы справиться с напряжением",
+      "Напряжение в теле — плечи, шея, челюсть — большую часть дня",
+      "Сложнее принимать решения даже простые",
+      "Ощущение что не справляюсь или что всё на мне",
+      "Радость от вещей которые раньше нравились стала меньше или исчезла"
+    ],
+    priority_analyses:["Кортизол утром (8:00) и в 16:00","Кортизол слюны в 4 точках (если доступен)","ДГЭА-С","Магний эритроцитарный","Витамин D","ТТГ + свободный Т3","Ферритин","Вч-СРБ + гомоцистеин"],
+    first_step:"Утренний свет 10 мин + магний глицинат 300 мг + теанин 200 мг вечером. Без алкоголя 7 дней."
+  },
+  {
+    id:"movement", num:6, title:"ДВИЖЕНИЕ И АКТИВНОСТЬ", color:"#00695C", fill:"#E0F2F1",
+    week:"Тематическая неделя: «Движение как лекарство»",
+    questions:[
+      "Веду преимущественно сидячий образ жизни — менее 30 мин движения в день",
+      "Нет регулярных тренировок — менее 2 раз в неделю",
+      "После тренировки чувствую истощение на несколько часов или следующий день",
+      "Тренируюсь интенсивно 5+ раз в неделю при высоком стрессе на работе",
+      "В моих тренировках нет силовой нагрузки — только кардио или растяжка",
+      "Усталость после тренировок нарастает с каждой неделей",
+      "Не отслеживаю показатели восстановления (HRV, пульс покоя)",
+      "Боли в суставах или мышцах мешают двигаться",
+      "Хожу пешком менее 5000 шагов в день",
+      "После приёма пищи сижу или лежу — не хожу",
+      "Избегаю движения из-за усталости",
+      "Нет практики для расслабления тела — йога, стретчинг, ходьба",
+      "Тренировки приносят стресс а не удовольствие — заставляю себя",
+      "После длительного перерыва очень трудно начать снова",
+      "Тренируюсь после 19:00 — и это мешает сну"
+    ],
+    priority_analyses:["Кортизол утром + ДГЭА-С","Ферритин + ОАК","Магний эритроцитарный","Витамин D","КФК через 48 ч после тренировки","Тестостерон общий и свободный","Глюкоза + инсулин","Вч-СРБ"],
+    first_step:"Определить паттерн: дефицит движения или перетренированность. Ходьба 15–20 мин после еды ежедневно."
+  },
+  {
+    id:"gut", num:7, title:"КИШЕЧНИК И ИММУНИТЕТ", color:"#4A1942", fill:"#F3E5F5",
+    week:"Тематическая неделя: «Кишечник — второй мозг»",
+    questions:[
+      "Вздутие живота — регулярно или после определённых продуктов",
+      "Запоры или нестабильный стул",
+      "После еды дискомфорт, тяжесть или боль в животе",
+      "Болею ОРВИ чаще 3 раз в год или болезни длятся дольше",
+      "Кожные реакции — высыпания, сухость, покраснение — то появляются то исчезают",
+      "Реакции на продукты которые раньше переносила нормально",
+      "Аллергии или аллергические реакции которые усилились",
+      "Почти нет ферментированных продуктов в рационе",
+      "Принимала антибиотики в последние 1–2 года",
+      "Хронические воспалительные симптомы — суставы, кожа, слизистые",
+      "Рацион беден клетчаткой — мало овощей, бобовых, злаков",
+      "Изжога, отрыжка или тяжесть после жирной еды",
+      "Замечаю связь между стрессом и симптомами ЖКТ",
+      "Диагностированы аутоиммунные заболевания или есть подозрение",
+      "Пью менее 1,5 л воды в день"
+    ],
+    priority_analyses:["Вч-СРБ","NLR из ОАК","АЛТ + АСТ + ГГТ","Кальпротектин в кале","Зонулин (при наличии)","АТ-ТПО","АТ к трансглутаминазе (tTG-IgA)","Витамин B12 + фолат","Общий анализ кала"],
+    first_step:"Ферментированные продукты ежедневно. Льняное семя 2 ст.л./день. Убрать сахар и ультрапереработанное."
+  },
+  {
+    id:"thyroid", num:8, title:"ЩИТОВИДНАЯ ЖЕЛЕЗА И МЕТАБОЛИЗМ", color:"#1565C0", fill:"#E3F2FD",
+    week:"Тематическая неделя: «Щитовидная — дирижёр метаболизма»",
+    questions:[
+      "Мёрзну чаще других людей в одинаковых условиях",
+      "Вес растёт или стоит несмотря на разумное питание и активность",
+      "Запоры или замедленное пищеварение",
+      "Кожа стала более сухой, волосы тусклыми или ломкими",
+      "Выпадение волос — особенно в области висков и внешнего края бровей",
+      "Отёки — особенно утром на лице, руках или ногах",
+      "Мышцы болят, скованны или слабее чем раньше без нагрузки",
+      "«Вата в голове» — медленное мышление, плохая память",
+      "Пульс в покое замедленный — ниже 60 ударов в минуту",
+      "Голос стал более хриплым или огрублел",
+      "Ощущение кома в горле или дискомфорт при глотании",
+      "ТТГ не делала более года или никогда",
+      "У меня или близких есть заболевания щитовидной железы",
+      "Диагностирован АИТ или есть подозрение",
+      "Холестерин повышен и это появилось или усилилось в последние годы"
+    ],
+    priority_analyses:["ТТГ + свободный Т3 + свободный Т4","АТ-ТПО + АТ-ТГ","Реверсивный Т3 (rT3)","УЗИ щитовидной железы","Селен в сыворотке","Ферритин","Витамин D","Глюкоза + инсулин + HbA1c","Липидный профиль","Кортизол утром"],
+    first_step:"2 бразильских ореха/день (селен). Морская рыба 3x/нед. Сдать ТТГ + fT3 + fT4 + АТ-ТПО."
+  }
+];
+
+const ZONES = [
+  {pct:25, label:"Хорошо", color:"#2E7D32"},
+  {pct:50, label:"Внимание", color:"#F57F17"},
+  {pct:75, label:"Приоритет", color:"#E65100"},
+  {pct:100, label:"Критично", color:"#C62828"}
+];
+
+function getZone(score, max){
+  const pct = score/max*100;
+  if(pct<=25) return ZONES[0];
+  if(pct<=50) return ZONES[1];
+  if(pct<=75) return ZONES[2];
+  return ZONES[3];
+}
+
+// State
+let currentBlock = 0;
+let answers = {};
+BLOCKS.forEach(b => { answers[b.id] = new Array(15).fill(null); });
+
+function setProgress(pct){ document.getElementById('progBar').style.width = pct+'%'; }
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function startQuiz(){
+  currentBlock = 0;
+  showScreen('quiz');
+  renderBlock();
+}
+
+function renderBlock(){
+  const b = BLOCKS[currentBlock];
+  const totalAnswered = answers[b.id].filter(v=>v!==null).length;
+  const pctDone = ((currentBlock * 15 + totalAnswered) / (BLOCKS.length * 15)) * 100;
+  setProgress(pctDone);
+
+  const html = `
+    <div class="block-header" style="background:${b.color}">
+      <div class="week-tag">${b.week}</div>
+      <h2>БЛОК ${b.num}: ${b.title}</h2>
+      <div class="progress-text">Блок ${currentBlock+1} из ${BLOCKS.length} · Вопросы ${currentBlock*15+1}–${currentBlock*15+15}</div>
+    </div>
+    <div class="questions-wrap" id="qwrap"></div>
+    <div class="nav-row">
+      ${currentBlock>0 ? '<button class="btn-sec" onclick="prevBlock()">← Назад</button>' : ''}
+      <button class="btn-next" id="btnNext" onclick="nextBlock()" ${totalAnswered<15?'disabled':''}>
+        ${currentBlock<BLOCKS.length-1 ? 'Далее →' : 'Получить результаты →'}
+      </button>
+    </div>
+  `;
+  document.getElementById('quizContent').innerHTML = html;
+
+  const wrap = document.getElementById('qwrap');
+  b.questions.forEach((q,i)=>{
+    const row = document.createElement('div');
+    row.className = 'question-row';
+    const sel = answers[b.id][i];
+    row.innerHTML = `
+      <div class="q-num">${i+1}</div>
+      <div class="q-text">${q}</div>
+      <div class="q-score">
+        ${[0,1,2,3].map(v=>`<button class="score-btn${sel===v?' selected':''}" data-v="${v}" onclick="setAnswer('${b.id}',${i},${v},this)">${v}</button>`).join('')}
+      </div>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+function setAnswer(bid, qi, val, btn){
+  answers[bid][qi] = val;
+  btn.closest('.q-score').querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const allDone = answers[bid].filter(v=>v!==null).length === 15;
+  if(allDone) document.getElementById('btnNext').disabled = false;
+  // auto progress
+  const pctDone = ((currentBlock * 15 + answers[bid].filter(v=>v!==null).length) / (BLOCKS.length * 15)) * 100;
+  setProgress(pctDone);
+}
+
+function nextBlock(){
+  const b = BLOCKS[currentBlock];
+  if(answers[b.id].filter(v=>v!==null).length < 15){ alert('Пожалуйста, ответьте на все вопросы блока'); return; }
+  if(currentBlock < BLOCKS.length-1){
+    currentBlock++;
+    showScreen('quiz');
+    renderBlock();
+  } else {
+    showResults();
+  }
+}
+
+function prevBlock(){
+  if(currentBlock>0){ currentBlock--; showScreen('quiz'); renderBlock(); }
+}
+
+function showResults(){
+  setProgress(100);
+  const scores = BLOCKS.map(b=>({
+    ...b,
+    score: answers[b.id].reduce((s,v)=>s+(v||0),0)
+  }));
+  scores.sort((a,b)=>b.score-a.score);
+  const top3 = scores.slice(0,3);
+
+  // Universal analyses
+  const univAnalyses = ["ОАК с формулой (NLR)","Ферритин","Витамин D 25(OH)D","ТТГ + свободный Т3 + fT4","HbA1c + глюкоза натощак","Инсулин натощак (HOMA-IR)","Вч-СРБ","Липидный профиль","АЛТ + АСТ + ГГТ","Витамин B12","Гомоцистеин"];
+
+  let html = `
+    <div class="results-header">
+      <h2>Ваши результаты</h2>
+      <p>Опросник завершён · ${BLOCKS.length} блоков · ${BLOCKS.length*15} вопросов</p>
+    </div>
+  `;
+
+  // All blocks sorted
+  scores.forEach(b=>{
+    const zone = getZone(b.score, 45);
+    const barW = Math.round(b.score/45*100);
+    html += `
+      <div class="block-result" style="border-color:${b.color}">
+        <div class="block-result-header" style="background:${b.color};color:#fff">
+          <span class="name">Блок ${b.num}: ${b.title}</span>
+          <span class="score-badge">${b.score}/45 · ${zone.label}</span>
+        </div>
+        <div class="block-result-body">
+          <div class="zone-bar-wrap"><div class="zone-bar" style="width:${barW}%;background:${zone.color}"></div></div>
+          <div class="interpretation" style="color:${zone.color}">Зона: <strong>${zone.label}</strong> (${barW}%)</div>
+          <div class="first-step">→ Первый шаг: ${b.first_step}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  // Top 3 priorities
+  html += `<div class="priority-box"><h3>Ваши три приоритета:</h3>`;
+  top3.forEach((b,i)=>{
+    html += `<div class="priority-item"><div class="priority-num">${i+1}</div><div class="priority-text"><strong>${b.title}</strong> — ${b.score}/45 баллов</div></div>`;
+  });
+  html += `</div>`;
+
+  // Analyses
+  const uniqueAnalyses = [...new Set([...top3.flatMap(b=>b.priority_analyses), ...univAnalyses])].slice(0,16);
+  html += `<div class="analyses-box"><h3>Рекомендуемые анализы для старта:</h3>`;
+  uniqueAnalyses.forEach(a=>{ html += `<span class="analysis-chip">${a}</span>`; });
+  html += `</div>`;
+
+  html += `<button class="restart-btn" onclick="restartQuiz()">Пройти опросник снова</button>`;
+
+  document.getElementById('resultsContent').innerHTML = html;
+  showScreen('results');
+}
+
+function restartQuiz(){
+  BLOCKS.forEach(b=>{ answers[b.id] = new Array(15).fill(null); });
+  currentBlock = 0;
+  startQuiz();
+}
+</script>
+</body>
+</html>
